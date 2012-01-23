@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+    <!-- JQuery version 1.7.1. -->
+    <script src="js/jquery.min.js"></script>
+    <script>
+        var doc;
+        
+        chrome.contextMenus.create({
+            "title": "Get definition and add to Anki",
+            "type": "normal",
+            "contexts": ["selection"],
+            "onclick": process
+        });
+
+        chrome.contextMenus.create({
+            "title": "Get definition and add to Anki with correction",
+            "type": "normal",
+            "contexts": ["selection"],
+            "onclick": correctAndProcess
+        });
+
+        function getDefinition(text) {
+            var url = $.get("http://oxforddictionaries.com/definition/" + text + "?q=" + text, function (data) {
+                var html = $(data);
+                var block = $("#entryPageContent", html);
+                var senseGroups = $(".senseGroup", block);
+                var json = '{"text" : "' + text + '", "parts" : [';
+                for (var i = 0; i < senseGroups.length; i++) {
+                    var senseGroup = senseGroups.get(i);
+                    var partOfSpeech = $("span.partOfSpeech", senseGroup).text();
+                    var definitions = $("span.definition", senseGroup);
+
+                    json += '{"part" : "' + partOfSpeech + '"';
+                    json += ', "definitions" : [';
+                    for (var j = 0; j < definitions.length; j++) {
+                        var definition = definitions.get(j);
+                        json += '"' + $(definition).text() + '"';
+                        if (j < definitions.length - 1) {
+                            json += ',';
+                        }
+                    }
+                    json += ']}';
+                    if (i < senseGroups.length - 1) {
+                        json += ',';
+                    }
+                }
+                json += ']}';
+                obj = JSON.parse(json);
+                showWindow(obj);
+            });
+        }
+
+        function showWindow(obj) {
+            chrome.tabs.getSelected(null, function (tab) {
+                var html = 'sdfsdf <button name="1dfsdf" value="send" onclick="javascript:sendValues" />';
+                chrome.tabs.sendRequest(tab.id, { "action": "showWindow", "html": html }, function (response) {
+                    alert(response);
+                    //send request to Anki
+                });
+            });
+        }
+
+        function process() {
+            chrome.tabs.getSelected(null, function (tab) {
+                chrome.tabs.sendRequest(tab.id, { action: "getSelectedText" }, function (response) {
+                    var text = $.trim(response.selectedText);
+                    getDefinition(text);
+                });
+            });
+        }
+
+        function correctAndProcess() {
+            chrome.tabs.getSelected(null, function (tab) {
+                chrome.tabs.sendRequest(tab.id, { action: "getSelectedText" }, function (response) {
+                    var text = $.trim(response.selectedText);
+                    text = prompt(text, text);
+                    getDefinition(text);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

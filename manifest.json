@@ -1,0 +1,26 @@
+{
+  "update_url":"http://clients2.google.com/service/update2/crx",
+  "name": "AnkiOxford",
+  "version": "0.1",
+  "description": "Add any English word and its definition from Oxford dictionary to your Anki",
+  "icons": {
+	"16": "icons/16.png",
+	"32": "icons/32.png",
+	"48": "icons/48.png",
+	"128": "icons/128.png"
+  },
+  "permissions": [
+	"tabs",
+	"http://*/*",
+	"https://*/*",
+	"contextMenus"
+  ],
+  "content_scripts": [ {
+	  "css": [ "css/window.css" ],
+	  "js": [ "js/startup.js" ],
+	  "matches": [ "https://*/*", "http://*/*" ],
+	  "run_at": "document_end"
+   } ],
+  "background_page": "background.html",
+  "options_page": "options.html"
+}

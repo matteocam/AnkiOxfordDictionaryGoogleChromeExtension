@@ -1,20 +1,97 @@
 <html>
-  <head>
-    
-    
-    
-    <script type="text/javascript" src="function.js">    </script>
-    <script>
-    
-    </script>
-    
-  </head>
-  <body>
-    <fieldset><legend></legend>
-  <form id="form1" name="form1" method="post" action="">
-  </form>
-</fieldset>
-  
-  </body>
+<head>
+<title>AnkiOxford</title>
+<style>
+body {
+  font-family:helvetica, arial, sans-serif;
+  font-size:80%;
+  margin:10px;
+}
+
+#header {
+  padding-bottom:1.5em;
+  padding-top:1.5em;
+}
+
+#header h1 {
+  font-size: 156%;
+  display:inline;
+  padding-bottom:43px;
+  padding-left:75px;
+  padding-top:40px;
+  background:url(icon_128.png) no-repeat;
+  background-size:67px;
+  background-position:1px 18px;
+}
+
+.section-header {
+  background:#ebeff9;
+  border-top:1px solid #b5c7de;
+  font-size:99%;
+  padding:3px 0 2px 5px;
+  font-weight:bold;
+  margin-bottom:1em;
+  margin-top:4em;
+}
+
+.section-header.first {
+  margin-top:1em;
+}
+
+#custom-domain {
+  width:300px;
+  margin-left:2px;
+}
+
+#footer {
+  margin-top:4em;
+}
+</style>
+</head>
+<body>
+
+<div id="header"><h1>Add definition from English Oxford Dictionary to your Anki</h1></div>
+
+<div class="section-header first">Anki credentials</div>
+<p>Enter your Anki username. </p>
+<p><input type="text" id="username" /></p>
+<p>Enter your Anki password. </p>
+<p><input type="text" id="password" /></p>
+<p>Enter deck where new words should be added. </p>
+<p><input type="text" id="deckname" /></p>
+
+
+<div id="footer">
+  <button id="save-button" style="font-weight:bold" onclick="save()">Save</button>
+  <button onclick="init()">Cancel</button>
+</div>
+
+<script>
+var usernametextbox;
+var passwordtextbox;
+var decknametextbox;
+var saveButton;
+
+init();
+
+function init() {
+    usernametextbox = document.getElementById("username");
+    passwordtextbox = document.getElementById("password");
+    decknametextbox = document.getElementById("deckname");
+    saveButton = document.getElementById("save-button");
+
+    usernametextbox.value = localStorage.username || "";
+    passwordtextbox.value = localStorage.password || "";
+    decknametextbox.value = localStorage.deckname || "";
+}
+
+function save() {
+    localStorage.username = usernametextbox.value;
+    localStorage.password = passwordtextbox.value;
+    localStorage.deckname = decknametextbox.value;
+
+    chrome.extension.getBackgroundPage().init();
+}
+</script>
+</body>
 </html>
-  

@@ -1,1 +1,4 @@
 button {float: right;}
+button#go {display:none;}
+#main {border-radius: 5px; border: 1px solid blue;  background-color: #FFFFFF; padding-bottom: 5px; z-index: 1000;}
+#word {margin-left: 5px; }

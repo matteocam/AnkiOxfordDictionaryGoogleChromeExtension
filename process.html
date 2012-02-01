@@ -5,19 +5,39 @@
     <script src="js/jquery.min.js"></script>
     <link rel="stylesheet" href="css/window.css" type="text/css">
 </head>
-<body style="background-color: White">
+<body>
     <script>
         var encodedPhrase = location.search.substring(6).toLowerCase();
         var decodedPhrase = decodeURI(encodedPhrase);
-        getDefinition(decodedPhrase);
+        var dataobject = {};
+        
+        chrome.extension.sendRequest({ 'action': 'getdataobject', 'text' : decodedPhrase }, getDefinition);
 
-        function getDefinition(text) {
+        function searchTermError(text) {
+        	alert("Definition for '" + text + "' couldn't be found");
+            closeiframe();
+            //TODO: add related searches            
+        }
+        
+        function getDefinition(externaldataobject) {
+        	dataobject = externaldataobject;
+        	var text = decodedPhrase;
+        	
+        	if (dataobject.addtoanki == "true") {
+            	$("button#go").show();
+        	}
+        	$("#close").click(closeiframe);
+        	
             var url = $.ajax({
                 //url: "http://oxforddictionaries.com/definition/" + text + "?q=" + text,
                 url: "http://oxforddictionaries.com/search/?region=uk&direct=1&q=" + encodeURI(text),
                 success: function (data) {
                     var html = $(data);
                     var block = $("#entryPageContent", html);
+                    if ($("#noresults", block).length > 0) {
+                    	searchTermError(text);
+                    	return;
+                    }                    	
                     var senseGroups = $(".senseGroup", block);
                     var correctedWord = $("span.pageTitle", html).text();
                     var json = '{"text" : "' + correctedWord + '", "parts" : [';
@@ -46,9 +66,7 @@
                 },
                 error: function (a, b, c) {
                     if ((a.readyState == 4) && (c == "Not Found")) {
-                        alert("Definition for " + text + " couldn't be found");
-                        //TODO add related searches
-                        closeiframe();
+                    	searchTermError(text);
                     }
                 }
             });
@@ -74,15 +92,22 @@
             $("#word").text($.trim(obj.text));
             $("#definition").val($.trim(definition));
 
+            
             $("#go").click(function () {
                 $.ajax({
                     type: 'POST',
                     url: 'http://ankiweb.net/account/login',
-                    data: "submitted=1&username=" + localStorage.username + "&password=" + localStorage.password,
+                    data: "submitted=1&username=" + dataobject.username + "&password=" + dataobject.password,
                     success: function (data) {
+                    	var html = $(data);
+                    	if (($(".mitem", html).length) == 0) {
+                    		alert('Authorization failed. Check your username and password on options page');
+                    		closeiframe();
+                    		return;
+                    	}
                         console.log('authorized');
                         $.ajax({
-                            url: "http://ankiweb.net/deck/manage?cmd=setActive&deck=" + localStorage.deckname,
+                            url: "http://ankiweb.net/deck/manage?cmd=setActive&deck=" + dataobject.deckname,
                             type: 'GET',
                             error: function (a, b, c) { alert('Authorization complete. Deck choose failed'); },
                             success: function (data) {
@@ -105,17 +130,17 @@
                     }
                 });
             });
-
-            $("#close").click(closeiframe);
         }
 
         function closeiframe() {
             chrome.extension.sendRequest({ 'action': 'closeiframe' }, function (response) {});
         }
     </script>
-    <span id="word"></span>
-    <button id="close" value="close" name="close">Close</button>
-    <button id="go" value="go" name="go">Add to Anki and close</button>
-    <textarea id="definition" style="width: 470px; height: 260px"></textarea>
+    <div id="main">
+	    <span id="word"></span>
+	    <button id="close" value="close" name="close">Close</button>
+	    <button id="go" value="go" name="go">Add to Anki and close</button>
+	    <textarea id="definition" style="width: 478px; height: 255px"></textarea>
+	</div>
 </body>
 </html>

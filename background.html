@@ -8,18 +8,20 @@
     <script src="js/jquery.min.js"></script>
     <script>
         chrome.contextMenus.create({
-            "title": "Get definition and add to Anki",
+            "title": (localStorage.addtoanki == true) ? "Get definition and add to Anki" : "Get word definition",
             "type": "normal",
             "contexts": ["selection"],
             "onclick": process
         });
 
-        chrome.contextMenus.create({
-            "title": "Get definition and add to Anki with correction",
-            "type": "normal",
-            "contexts": ["selection"],
-            "onclick": correctAndProcess
-        });
+        if (localStorage.allowcorrection == true) {
+	        chrome.contextMenus.create({
+	            "title": (localStorage.addtoanki == true) ? "Get definition and add to Anki with correction" : "Get word definition with correction",
+	            "type": "normal",
+	            "contexts": ["selection"],
+	            "onclick": correctAndProcess
+	        });
+        }
 
         function translateAndAdd(askCorrection) {
             chrome.tabs.getSelected(null, function (tab) {
@@ -39,6 +41,15 @@
                         console.log('iframeclosed event triggered');
                     });
                 });
+            } else if (request.action == "getdataobject") {
+            	var dataobject = {
+                		'username': localStorage.username,
+                		'password' : localStorage.password,
+                		'deckname' : localStorage.deckname,
+                		'addtoanki' : localStorage.addtoanki,
+                		'allowcorrection' : localStorage.allowcorrection
+                		};
+            	sendResponse(dataobject);
             }
         });
 

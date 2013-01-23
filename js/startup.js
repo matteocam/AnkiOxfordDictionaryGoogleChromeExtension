@@ -1,5 +1,5 @@
-chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
-    var divId = 'ooppqqwweediv';
+chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
+	var divId = 'ooppqqwweediv';
     var frameId = 'ooppqqwweeiframe';
 
     if (request.action == "getSelectedText") {

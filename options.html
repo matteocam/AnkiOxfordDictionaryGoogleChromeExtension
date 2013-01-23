@@ -1,115 +1,73 @@
 <html>
 <head>
 <title>AnkiOxford</title>
-<script src="js/jquery.min.js"></script>
+<script src="js/jquery.1.7.1.min.js"></script>
+<script src="js/option.js"></script>
 <style>
-body {
-  font-family:helvetica, arial, sans-serif;
-  font-size:80%;
-  margin:10px;
-}
-
-#header {
-  padding-bottom:1.5em;
-  padding-top:1.5em;
-}
-
-#header h1 {
-  font-size: 156%;
-  display:inline;
-  padding-bottom:43px;
-  padding-left:75px;
-  padding-top:40px;
-  background:url(icon_128.png) no-repeat;
-  background-size:67px;
-  background-position:1px 18px;
-}
-
-.section-header {
-  background:#ebeff9;
-  border-top:1px solid #b5c7de;
-  font-size:99%;
-  padding:3px 0 2px 5px;
-  font-weight:bold;
-  margin-bottom:1em;
-  margin-top:4em;
-}
-
-.section-header.first {
-  margin-top:1em;
-}
-
-#custom-domain {
-  width:300px;
-  margin-left:2px;
-}
-
-#footer {
-  margin-top:4em;
-}
+	body {
+	  font-family:helvetica, arial, sans-serif;
+	  font-size:80%;
+	  margin:10px;
+	}
+	
+	#header {
+	  padding-bottom:1.5em;
+	  padding-top:1.5em;
+	}
+	
+	#header h1 {
+	  font-size: 156%;
+	  display:inline;
+	  padding-bottom:43px;
+	  padding-left:75px;
+	  padding-top:40px;
+	  background:url(icon_128.png) no-repeat;
+	  background-size:67px;
+	  background-position:1px 18px;
+	}
+	
+	.section-header {
+	  background:#ebeff9;
+	  border-top:1px solid #b5c7de;
+	  font-size:99%;
+	  padding:3px 0 2px 5px;
+	  font-weight:bold;
+	  margin-bottom:1em;
+	  margin-top:4em;
+	}
+	
+	.section-header.first {
+	  margin-top:1em;
+	}
+	
+	#custom-domain {
+	  width:300px;
+	  margin-left:2px;
+	}
+	
+	#footer {
+	  margin-top:4em;
+	}
 </style>
 </head>
 <body>
-
-<div id="header"><h1>Add definition from English Oxford Dictionary to your Anki</h1></div>
-
-<div class="section-header first">Anki credentials</div>
-<p>Enter your Anki username. </p>
-<p><input type="text" id="username" /></p>
-<p>Enter your Anki password. </p>
-<p><input type="text" id="password" /></p>
-<p>Enter deck where new words should be added. </p>
-<p><input type="text" id="deckname" /></p>
-<p>Allow correction option in context menu? (To see the effect you should restart your browser) </p>
-<p><input type="checkbox" id="allowcorrection" /></p>
-<p>Is Add to Anki feature enabled? </p>
-<p><input type="checkbox" id="addtoanki" /></p>
-
-<div id="footer">
-  <button id="save-button" style="font-weight:bold" onclick="save()">Save</button>
-  <button onclick="init()">Cancel</button>
-</div>
-
-<script>
-var usernametextbox;
-var passwordtextbox;
-var decknametextbox;
-var allowcorrectioncheckbox;
-var addtoankicheckbox;
-var saveButton;
-
-$(function() {
-	init();
-});
-
-function init() {
-    usernametextbox = $("#username");
-    passwordtextbox = $("#password");
-    decknametextbox = $("#deckname");
-    allowcorrectioncheckbox = $("#allowcorrection");
-    addtoankicheckbox = $("#addtoanki");
-    saveButton = $("#save-button");
-
-    usernametextbox.val(localStorage.username || "");
-    passwordtextbox.val(localStorage.password || "");
-    decknametextbox.val(localStorage.deckname || "");
-    if (localStorage.allowcorrection == "true") { 
-    	allowcorrectioncheckbox.attr("checked", true); 
-   	}
-    if (localStorage.addtoanki == "true") {
-    	addtoankicheckbox.attr("checked", true); 
-    }
-}
-
-function save() {
-    localStorage.username = usernametextbox.val();
-    localStorage.password = passwordtextbox.val();
-    localStorage.deckname = decknametextbox.val();
-    localStorage.allowcorrection = allowcorrectioncheckbox.attr("checked") == "checked" ? true : false;
-    localStorage.addtoanki = addtoankicheckbox.attr("checked") == "checked" ? true : false;    
-
-    chrome.extension.getBackgroundPage().init();
-}
-</script>
+	<div id="header"><h1>Add definition from English Oxford Dictionary to your Anki 2</h1></div>
+	
+	<div class="section-header first">Anki 2 credentials</div>
+	<p>Enter your Anki 2 username. </p>
+	<p><input type="text" id="username" /></p>
+	<p>Enter your Anki 2 password. </p>
+	<p><input type="text" id="password" /></p>
+	<p>Enter a deck name to which new words should be added</p>
+	<p><input type="text" id="deckname" /></p>
+	<p>Allow correction option in context menu? (To see the effect you should restart your browser) </p>
+	<p><input type="checkbox" id="allowcorrection" /></p>
+	<p>Is Add to Anki 2 feature enabled? </p>
+	<p><input type="checkbox" id="addtoanki" /></p>
+	
+	<div id="footer">
+	  <button id="save-button" style="font-weight:bold">Save</button>
+	  <button id="cancel-button">Cancel</button>
+	</div>
 </body>
 </html>

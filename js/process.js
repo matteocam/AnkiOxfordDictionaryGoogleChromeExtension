@@ -5,19 +5,19 @@ var dataobject = {};
 chrome.extension.sendMessage({ 'action': 'getdataobject', 'text' : decodedPhrase }, getDefinition);
 
 function searchTermError(text) {
-  alert("Definition for '" + text + "' couldn't be found");
+	alert("Definition for '" + text + "' couldn't be found");
     closeiframe();       
 }
 
 function getDefinition(externaldataobject) {
-  dataobject = externaldataobject;
-  var text = decodedPhrase;
-  
-  if (dataobject.addtoanki == "true") {
-      $("button#go").show();
-  }
-  $("#close").click(closeiframe);
-  
+	dataobject = externaldataobject;
+	var text = decodedPhrase;
+	
+	if (dataobject.addtoanki == "true") {
+    	$("button#go").show();
+	}
+	$("#close").click(closeiframe);
+	
     $.ajax({
         //url: "http://oxforddictionaries.com/definition/" + text + "?q=" + text,
         url: "http://oxforddictionaries.com/search/?region=uk&direct=1&q=" + encodeURI(text),
@@ -25,9 +25,9 @@ function getDefinition(externaldataobject) {
             var html = $(data);
             var block = $("#entryPageContent", html);
             if ($("#noresults", block).length > 0) {
-              searchTermError(text);
-              return;
-            }                     
+            	searchTermError(text);
+            	return;
+            }                    	
             var senseGroups = $(".senseGroup", block);
             var correctedWord = $(".pageTitle", html).text();
             var json = '{"text" : "' + correctedWord + '", "parts" : [';
@@ -56,7 +56,7 @@ function getDefinition(externaldataobject) {
         },
         error: function (a, b, c) {
             if ((a.readyState == 4) && (c == "Not Found")) {
-              searchTermError(text);
+            	searchTermError(text);
             }
         }
     });
@@ -89,49 +89,51 @@ function showWindow(obj) {
             url: 'https://ankiweb.net/account/login',
             data: "submitted=1&username=" + dataobject.username + "&password=" + dataobject.password,
             success: function (data) {
-              var html = $(data);
-              if (($(".mitem", html).length) == 0) {
-                alert('Authorization failed. Check your username and password on options page');
-                closeiframe();
-                return;
-              }
+            	var html = $(data);
+            	if (($(".mitem", html).length) == 0) {
+            		alert('Authorization failed. Check your username and password on options page');
+            		closeiframe();
+            		return;
+            	}
                 console.log('authorized, deck mid' + dataobject.deckmid);
                 if ((typeof dataobject.deckmid == "undefined") || (dataobject.deckmid == 0)) {
-                  $.ajax( {
-                    type: "GET",
-                    url: "https://ankiweb.net/edit/",
-                    success: function(data) {
-                      var id = 0; 
-                      var modid = 0; 
-                      var o = jQuery.parseJSON(/editor\.decks = (.*}});/i.exec(data)[1]);
-                      var deckname = dataobject.deckname;
-                      for (var prop in o) { 
-                        if (o[prop].name == deckname) { 
-                          id = prop == "1" ? "1" : prop.substr(0, prop.length - 3); 
-                          break; 
-                        }
-                      }; 
-                      if (id == 0) {
-                        alert("The deck with name " + dataobject.deckname + " couldn't be found. Please check deck name and register");
-                        return;
-                      }
-                      var mods = jQuery.parseJSON(/editor\.models = (.*}]);/i.exec(data)[1]);
-                      jQuery.each(mods, function(i, n) {if (n.mod == id) modid = n.id;});
-                      if (id == "1" && modid == 0) {
-                        modid = mods[0].id;
-                      }
-                      if (modid == 0) {
-                        modid = mods[0].id; //very strange place, because the logic between model and deck is vague
-                        //alert("Couldn't find default note type model for the deck " + dataobject.deckname + ". Please contact with extension developer and describe the error situation");
-                        //return;
-                      }
-                      chrome.extension.sendMessage({ 'action': 'updatemid', 'mid' : modid }, function() {}); 
-                      dataobject.deckmid = modid;
-                      addWord();
-                    }
-                  });
+                	$.ajax( {
+                		type: "GET",
+                		url: "https://ankiweb.net/edit/",
+                		success: function(data) {
+                			var id = 0; 
+                			var modid = 0; 
+                			var o = jQuery.parseJSON(/editor\.decks = (.*}});/i.exec(data)[1]);
+                			var deckname = dataobject.deckname;
+                			for (var prop in o) { 
+                				if (o[prop].name == deckname) { 
+                					id = prop == "1" ? "1" : prop.substr(0, prop.length - 3); 
+                					break; 
+                				}
+                			}; 
+                			if (id == 0) {
+                				alert("The deck with name " + dataobject.deckname + " couldn't be found. Please check deck name and register");
+                				return;
+                			}
+                			var mods = jQuery.parseJSON(/editor\.models = (.*}]);/i.exec(data)[1]);
+                			jQuery.each(mods, function(i, n) {if (n.mod == id) modid = n.id;});
+                			if (id == "1" && modid == 0) {
+                				modid = mods[0].id;
+                			}
+							if (modid == 0 && mods.length > 0) {
+                				modid = mods[0].id; //Well. The linkages between note type and deck name is not clear, therefore this is the most reliable solution, but not right enough.
+                			}
+							if (modid == 0) {
+								alert("Couldn't find default note type model for the deck " + dataobject.deckname + ". Please contact with extension developer and describe the error situation");
+								return;
+							}
+                			chrome.extension.sendMessage({ 'action': 'updatemid', 'mid' : modid }, function() {}); 
+                			dataobject.deckmid = modid;
+                			addWord();
+                		}
+                	});
                 } else {
-                  addWord();
+                	addWord();
                 }
                 
             },
@@ -143,23 +145,23 @@ function showWindow(obj) {
 }
 
 function addWord() {
-  var front = $("#word").text();
-  var back = $("#definition").val().replace(/\n/g, '<br />').replace(/\r/g, '');
-  var fields;
-  fields = [];
-  fields.push(front);
-  fields.push(back);
-  var data = [fields, ''];
-  
-  var dict = {
-     data: JSON.stringify(data),
-     mid: dataobject.deckmid,
-     deck: dataobject.deckname
-  };
-  
-  var addurl ='https://ankiweb.net/edit/save';
-  
-  $.get(
+	var front = $("#word").text();
+	var back = $("#definition").val().replace(/\n/g, '<br />').replace(/\r/g, '');
+	var fields;
+	fields = [];
+	fields.push(front);
+	fields.push(back);
+	var data = [fields, ''];
+	
+	var dict = {
+		 data: JSON.stringify(data),
+		 mid: dataobject.deckmid,
+		 deck: dataobject.deckname
+	};
+	
+	var addurl ='https://ankiweb.net/edit/save';
+	
+	$.get(
         addurl,
         dict,
         function (data) {

@@ -95,41 +95,18 @@ function showWindow(obj) {
             		closeiframe();
             		return;
             	}
+            	
                 console.log('authorized, deck mid' + dataobject.deckmid);
+                // Q: why does it have to be "undefined" here?
                 if ((typeof dataobject.deckmid == "undefined") || (dataobject.deckmid == 0)) {
                 	$.ajax( {
                 		type: "GET",
                 		url: "https://ankiweb.net/edit/",
                 		success: function(data) {
-                			var id = 0; 
-                			var modid = 0; 
-                			var o = jQuery.parseJSON(/editor\.decks = (.*}});/i.exec(data)[1]);
-                			var deckname = dataobject.deckname;
-                			for (var prop in o) { 
-                				if (o[prop].name == deckname) { 
-                					id = prop == "1" ? "1" : prop.substr(0, prop.length - 3); 
-                					break; 
-                				}
-                			}; 
-                			if (id == 0) {
-                				alert("The deck with name " + dataobject.deckname + " couldn't be found. Please check deck name and register");
-                				return;
-                			}
-                			var mods = jQuery.parseJSON(/editor\.models = (.*}]);/i.exec(data)[1]);
-                			jQuery.each(mods, function(i, n) {if (n.mod == id) modid = n.id;});
-                			if (id == "1" && modid == 0) {
-                				modid = mods[0].id;
-                			}
-							if (modid == 0 && mods.length > 0) {
-                				modid = mods[0].id; //Well. The linkages between note type and deck name is not clear, therefore this is the most reliable solution, but not right enough.
-                			}
-							if (modid == 0) {
-								alert("Couldn't find default note type model for the deck " + dataobject.deckname + ". Please contact with extension developer and describe the error situation");
-								return;
-							}
-                			chrome.extension.sendMessage({ 'action': 'updatemid', 'mid' : modid }, function() {}); 
-                			dataobject.deckmid = modid;
-                			addWord();
+							var decks = jQuery.parseJSON(/editor\.decks = (.*}});/i.exec(data)[1]);
+							var models = jQuery.parseJSON(/editor\.models = (.*}]);/i.exec(data)[1]);
+							get_deck_model_ids(decks, models);
+							addWord();
                 		}
                 	});
                 } else {
@@ -144,14 +121,68 @@ function showWindow(obj) {
     });
 }
 
+function get_deck_model_ids(decks, models)
+{
+	var deck_id = 0; 
+	var model_id = 0; 
+	
+	var deckname = dataobject.deckname;
+	
+	// search the destination deck among the retrieved ones
+	for (var prop in decks) { 
+		if (decks[prop].name == deckname) { 
+			deck_id = prop == "1" ? "1" : prop.substr(0, prop.length - 3); 
+			break; 
+		}
+	}; 
+	if (deck_id == 0) {
+		alert("The deck with name " + dataobject.deckname + " couldn't be found. Please check deck name and register");
+		return;
+	}
+	
+	// What we want is trying to access the right basic model, I think (how do we know? The user should specify that)
+	
+	// XXX: I suppose that from here on, what it's trying to do 
+	// is getting the right (Basic) note type, aka model
+	jQuery.each(models, function(i, n) {
+		if (n.mod == deck_id) 
+			model_id = n.id;
+	});
+	if (deck_id == "1" && model_id == 0) {
+		model_id = models[0].id;
+	}
+	if (model_id == 0 && models.length > 0) {
+		// Well. The linkages between note type and deck name is not clear, 
+		// therefore this is the most reliable solution, but not right enough.
+		model_id = models[0].id; 
+	}
+	if (model_id == 0) {
+		alert("Couldn't find default note type model for the deck " + dataobject.deckname + ". Please contact with extension developer and describe the error situation");
+		return;
+	}
+	chrome.extension.sendMessage({ 'action': 'updatemid', 'mid' : model_id }, function() {}); 
+	dataobject.deckmid = model_id;
+	
+}
+
 function addWord() {
 	var front = $("#word").text();
+	// replace html new line tags 
 	var back = $("#definition").val().replace(/\n/g, '<br />').replace(/\r/g, '');
-	var fields;
+	
+	// fields contains two items: the word and its definition.
+	// In general, however, can be an array with an ordered numbered of
+	// fields, depending on the note type
+	var fields; 
 	fields = [];
 	fields.push(front);
 	fields.push(back);
-	var data = [fields, ''];
+	
+	var tags = '' // we assume no tags
+	var data = [fields, tags];
+	
+	// DEBUG
+	console.log(dataobject.deckname);
 	
 	var dict = {
 		 data: JSON.stringify(data),
